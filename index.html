@@ -5,7 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>POS - Mar de Plata</title>
     
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💎</text></svg>">
+    <link rel="apple-touch-icon" sizes="57x57" href="apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192"  href="android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
+    <link rel="manifest" href="manifest.json">
+    
+    <meta name="msapplication-TileColor" content="#007672">
+    <meta name="msapplication-TileImage" content="ms-icon-144x144.png">
+    <meta name="theme-color" content="#007672">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -31,7 +48,7 @@
         #ticket-template { font-family: monospace; width: 300px; padding: 20px; background: white; color: black; display: none; }
     </style>
 </head>
-<body class="antialiased text-slate-800 flex justify-center bg-slate-200">
+<body class="antialiased text-slate-800 flex justify-center bg-slate-200" onload="init()">
 
     <div class="w-full max-w-md min-h-screen bg-white shadow-2xl flex flex-col relative overflow-hidden">
         
@@ -124,9 +141,7 @@
 
             <div id="view-confirm" class="hidden space-y-6">
                 <div class="text-center"><span class="text-brand text-xs font-black uppercase">5. Confirmación</span></div>
-                
                 <textarea id="sale-notes" rows="3" placeholder="Toque aquí para escribir comentarios..." class="w-full p-4 bg-white border-2 border-slate-200 rounded-2xl focus:border-brand outline-none text-sm shadow-inner"></textarea>
-                
                 <button onclick="finalizeSale()" class="w-full bg-brand text-white py-6 rounded-2xl font-black text-xl active:scale-95 flex justify-center items-center gap-2"><i class="fa-solid fa-save"></i> GUARDAR VENTA</button>
             </div>
 
@@ -211,12 +226,12 @@
         };
         let chartInstance = null;
 
-        // Formatear fecha para el input tipo date (YYYY-MM-DD)
         const todayISO = new Date().toISOString().split('T')[0];
 
         function init() { 
             updateHeaders();
-            document.getElementById('filter-date').value = todayISO; // Pre-seleccionar hoy
+            const dateInput = document.getElementById('filter-date');
+            if(dateInput) dateInput.value = todayISO;
         }
 
         function showView(viewId) {
@@ -261,7 +276,8 @@
 
         function finalizeSale() {
             const total = parseFloat(state.price || 0) * state.qty;
-            const notes = document.getElementById('sale-notes').value;
+            const notesInput = document.getElementById('sale-notes');
+            const notes = notesInput ? notesInput.value : '';
             
             state.lastSale = {
                 id: 'MDP-' + Math.floor(Math.random()*10000),
@@ -269,12 +285,11 @@
                 notes: notes,
                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 date: new Date().toLocaleDateString(),
-                isoDate: new Date().toISOString().split('T')[0] // Guarda YYYY-MM-DD para el filtro exacto
+                isoDate: new Date().toISOString().split('T')[0]
             };
             state.history.unshift(state.lastSale);
             localStorage.setItem('mdp_history', JSON.stringify(state.history));
             
-            // PDF DATA
             document.getElementById('t-id').innerText = state.lastSale.id;
             document.getElementById('t-date').innerText = `${state.lastSale.date} ${state.lastSale.time}`;
             document.getElementById('t-qty').innerText = state.lastSale.qty;
@@ -285,7 +300,6 @@
             document.getElementById('t-pay').innerText = state.lastSale.payment;
             document.getElementById('t-notes').innerText = state.lastSale.notes || 'Ninguna';
 
-            // Audio & Voz
             try {
                 const actx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = actx.createOscillator(); const gain = actx.createGain();
@@ -301,6 +315,7 @@
             }
 
             document.getElementById('modal-success').classList.remove('hidden');
+            updateHeaders();
         }
 
         function updateHeaders() {
@@ -308,9 +323,9 @@
             const tBS = state.history.filter(s => s.currency === 'BS').reduce((a, s) => a + s.total, 0);
             document.getElementById('header-total-usd').innerText = `$ ${tUSD.toFixed(2)}`;
             document.getElementById('header-total-bs').innerText = `Bs ${tBS.toFixed(2)}`;
+            const headerCount = document.getElementById('header-count');
+            if(headerCount) headerCount.innerText = state.history.length;
         }
-
-        // --- FILTROS, GRÁFICOS Y EXPORTACIONES ---
 
         function applyFilters() {
             const fCat = document.getElementById('filter-cat').value;
@@ -320,7 +335,6 @@
             let filtered = state.history.filter(s => {
                 let matchCat = fCat === 'ALL' || s.category.includes(fCat);
                 let matchPay = fPay === 'ALL' || s.payment === fPay;
-                // Si el filtro de fecha tiene un valor, se compara con el isoDate de la venta. Si no, se muestran todas.
                 let matchDate = !fDate || s.isoDate === fDate; 
                 return matchCat && matchPay && matchDate;
             });
@@ -354,7 +368,9 @@
         }
 
         function updateChart(data) {
-            const ctx = document.getElementById('salesChart').getContext('2d');
+            const canvas = document.getElementById('salesChart');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
             let counts = { 'Anillos': 0, 'Cadenas': 0, 'Relojes': 0, 'Aretes': 0 };
             data.forEach(s => {
                 if(s.category.includes('Anillo')) counts['Anillos']++;
@@ -365,7 +381,6 @@
 
             if(chartInstance) chartInstance.destroy();
 
-            // chartInstance config. Notice maintainAspectRatio: false
             chartInstance = new Chart(ctx, {
                 type: 'doughnut',
                 data: {
@@ -378,7 +393,7 @@
                 },
                 options: {
                     responsive: true,
-                    maintainAspectRatio: false, // CRÍTICO PARA EVITAR EL BUG DEL INFINITO
+                    maintainAspectRatio: false,
                     plugins: { legend: { position: 'right', labels: { boxWidth: 12, font: {size: 10} } } }
                 }
             });
@@ -420,8 +435,6 @@
             XLSX.utils.book_append_sheet(wb, ws, "Reporte_Ventas");
             XLSX.writeFile(wb, "MarDePlata_Reporte.xlsx");
         }
-
-        init();
     </script>
 </body>
 </html>
