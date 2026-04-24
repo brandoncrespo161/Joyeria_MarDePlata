@@ -14,6 +14,7 @@
     <meta name="msapplication-TileColor" content="#007672">
     <meta name="msapplication-TileImage" content="ms-icon-144x144.png">
     <meta name="theme-color" content="#007672">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -25,10 +26,7 @@
             theme: {
                 extend: { 
                     colors: { 
-                        brand: '#007672', 
-                        brandDark: '#005a57', 
-                        brandLight: '#e6f2f1',
-                        brandGold: '#d6a34a' 
+                        brand: '#007672', brandDark: '#005a57', brandLight: '#e6f2f1', brandGold: '#d6a34a' 
                     } 
                 }
             }
@@ -41,7 +39,6 @@
         .keypad-btn { transition: all 0.1s ease-in-out; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
         .keypad-btn:active { background-color: #007672; color: white; transform: scale(0.92); }
         .hide-scrollbar::-webkit-scrollbar { display: none; }
-        
         #pdf-wrapper { position: absolute; left: -9999px; top: 0; }
         #ticket-template { font-family: 'Courier New', Courier, monospace; width: 80mm; padding: 5mm; background: white; color: black; font-size: 12px; }
     </style>
@@ -99,11 +96,11 @@
                 </div>
                 <div class="mt-5 bg-brandDark/40 p-3 rounded-2xl border border-white/10 flex justify-between items-center max-w-sm mx-auto">
                     <div class="w-1/2 text-center">
-                        <span class="text-[9px] uppercase font-bold opacity-70 block mb-0.5">Total USD</span>
+                        <span class="text-[9px] uppercase font-bold opacity-70 block mb-0.5">Total USD Global</span>
                         <span id="header-total-usd" class="text-xl font-black">$ 0.00</span>
                     </div>
                     <div class="w-1/2 border-l border-white/20 pl-4 text-center">
-                        <span class="text-[9px] uppercase font-bold opacity-70 block mb-0.5">Total Bs.</span>
+                        <span class="text-[9px] uppercase font-bold opacity-70 block mb-0.5">Total Bs. Global</span>
                         <span id="header-total-bs" class="text-xl font-black">Bs 0.00</span>
                     </div>
                 </div>
@@ -112,7 +109,7 @@
             <main class="flex-grow p-6 overflow-y-auto hide-scrollbar pb-28">
                 
                 <div id="view-categories" class="space-y-5 animate-in slide-in-from-bottom-4 duration-300">
-                    <div class="text-center mb-4"><span class="text-brand text-xs font-black uppercase tracking-widest">1. Selección</span></div>
+                    <div class="text-center mb-4"><span class="text-brand text-xs font-black uppercase tracking-widest">1. Selección de Producto</span></div>
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6" id="category-grid">
                         <button onclick="nextStep('qty', 'Anillos')" class="aspect-square bg-slate-50 border border-slate-200 rounded-3xl hover:border-brand flex flex-col items-center justify-center gap-3 active:scale-95 transition-all shadow-sm">
                             <span class="text-5xl drop-shadow-md">💍</span><span class="font-bold text-slate-700 text-xs uppercase">Anillos</span>
@@ -133,7 +130,7 @@
                 </div>
 
                 <div id="view-qty" class="hidden space-y-8 text-center max-w-sm mx-auto">
-                    <span class="text-brand text-xs font-black uppercase">2. Unidades</span>
+                    <span class="text-brand text-xs font-black uppercase">2. Unidades de <span id="lbl-cat-qty" class="text-brandGold"></span></span>
                     <div class="flex items-center justify-center gap-8 py-8">
                         <button onclick="adjustQty(-1)" class="w-16 h-16 bg-slate-100 rounded-full text-3xl font-bold active:scale-90">-</button>
                         <span id="display-qty" class="text-7xl font-black text-brand">1</span>
@@ -143,7 +140,7 @@
                 </div>
 
                 <div id="view-price" class="hidden space-y-4 text-center max-w-sm mx-auto">
-                    <span class="text-brand text-xs font-black uppercase">3. Moneda y Valor</span>
+                    <span class="text-brand text-xs font-black uppercase">3. Precio Unitario</span>
                     <div class="flex justify-center gap-2 mt-3">
                         <button onclick="setCurrency('USD')" id="btn-usd" class="w-1/2 py-2 rounded-xl font-bold border-2 border-brand bg-brandLight text-brand">Dólares ($)</button>
                         <button onclick="setCurrency('BS')" id="btn-bs" class="w-1/2 py-2 rounded-xl font-bold border-2 border-slate-200 bg-white text-slate-400">Bolivianos (Bs)</button>
@@ -166,22 +163,49 @@
                         <button onclick="pressKey('0')" class="keypad-btn h-16 border rounded-2xl font-black text-2xl">0</button>
                         <button onclick="pressKey('DEL')" class="h-16 bg-rose-50 border border-rose-100 text-rose-500 rounded-2xl font-black text-2xl active:bg-rose-500 active:text-white"><i class="fa-solid fa-delete-left"></i></button>
                     </div>
-                    <button onclick="nextStep('payment')" class="w-full mt-2 bg-brand text-white py-5 rounded-2xl font-black uppercase active:scale-95">Siguiente</button>
+                    
+                    <button onclick="addToCart()" class="w-full mt-2 bg-brandGold text-brandDark shadow-lg py-5 rounded-2xl font-black uppercase active:scale-95 flex justify-center items-center gap-2">
+                        <i class="fa-solid fa-cart-plus"></i> Añadir a la Cuenta
+                    </button>
+                </div>
+
+                <div id="view-cart" class="hidden space-y-4 max-w-md mx-auto">
+                    <div class="text-center mb-6"><span class="text-brand text-xs font-black uppercase tracking-widest">Resumen de Venta Actual</span></div>
+                    
+                    <div id="cart-items-container" class="space-y-3 max-h-64 overflow-y-auto pr-2">
+                        </div>
+
+                    <div class="bg-brandDark text-brandLight p-4 rounded-xl shadow-inner mt-4">
+                        <p class="text-[10px] uppercase tracking-wider font-bold opacity-80 mb-1">Total a cobrar:</p>
+                        <p id="cart-total-display" class="text-2xl font-black">Bs 0.00</p>
+                    </div>
+
+                    <div class="flex gap-3 pt-4">
+                        <button onclick="showView('view-categories')" class="flex-1 border-2 border-brand text-brand bg-white py-4 rounded-xl font-bold text-[11px] uppercase active:scale-95">
+                            + Añadir Otra Joya
+                        </button>
+                        <button onclick="nextStep('payment')" class="flex-1 bg-brand text-white py-4 rounded-xl font-black text-[11px] uppercase shadow-lg shadow-brand/30 active:scale-95">
+                            Proceder al Pago
+                        </button>
+                    </div>
                 </div>
 
                 <div id="view-payment" class="hidden space-y-5 max-w-sm mx-auto">
-                    <div class="text-center mb-6"><span class="text-brand text-xs font-black uppercase">4. Método de Pago</span></div>
+                    <div class="text-center mb-6"><span class="text-brand text-xs font-black uppercase">Método de Pago Final</span></div>
                     <div class="space-y-3">
                         <button onclick="setPayment('Efectivo', this)" class="pay-option w-full p-5 border-2 border-brand bg-brandLight text-brand rounded-2xl flex justify-between font-bold"><span class="flex items-center gap-4"><i class="fa-solid fa-money-bill-1-wave w-6"></i> EFECTIVO</span><i class="fa-solid fa-circle-check"></i></button>
                         <button onclick="setPayment('Tarjeta', this)" class="pay-option w-full p-5 border-2 border-slate-200 text-slate-500 rounded-2xl flex justify-between font-bold"><span class="flex items-center gap-4"><i class="fa-solid fa-credit-card w-6"></i> TARJETA</span><i class="fa-solid fa-circle text-slate-200"></i></button>
                         <button onclick="setPayment('Transferencia QR', this)" class="pay-option w-full p-5 border-2 border-slate-200 text-slate-500 rounded-2xl flex justify-between font-bold"><span class="flex items-center gap-4"><i class="fa-solid fa-qrcode w-6"></i> QR TRANSFERENCIA</span><i class="fa-solid fa-circle text-slate-200"></i></button>
                     </div>
-                    <button onclick="nextStep('confirm')" class="w-full mt-4 bg-slate-800 text-white py-5 rounded-2xl font-black uppercase active:scale-95">Siguiente</button>
+                    <div class="flex gap-2 mt-4">
+                        <button onclick="showView('view-cart')" class="w-1/3 bg-slate-200 text-slate-600 py-5 rounded-2xl font-bold uppercase active:scale-95 text-xs">Volver</button>
+                        <button onclick="nextStep('confirm')" class="w-2/3 bg-slate-800 text-white py-5 rounded-2xl font-black uppercase active:scale-95">Siguiente</button>
+                    </div>
                 </div>
 
                 <div id="view-confirm" class="hidden space-y-6 max-w-sm mx-auto">
-                    <div class="text-center"><span class="text-brand text-xs font-black uppercase">5. Confirmación</span></div>
-                    <textarea id="sale-notes" rows="3" placeholder="Toque aquí para escribir comentarios..." class="w-full p-4 bg-white border-2 border-slate-200 rounded-2xl focus:border-brand outline-none text-sm shadow-inner"></textarea>
+                    <div class="text-center"><span class="text-brand text-xs font-black uppercase">Confirmación y Notas</span></div>
+                    <textarea id="sale-notes" rows="3" placeholder="Opcional: Escriba observaciones del cliente o la venta..." class="w-full p-4 bg-white border-2 border-slate-200 rounded-2xl focus:border-brand outline-none text-sm shadow-inner"></textarea>
                     <button onclick="finalizeSale()" class="w-full bg-brand text-white py-6 rounded-2xl font-black text-xl active:scale-95 flex justify-center items-center gap-2 shadow-lg shadow-brand/30"><i class="fa-solid fa-save"></i> GUARDAR VENTA</button>
                 </div>
 
@@ -303,10 +327,9 @@
                     <span>Cant. Artículo</span>
                     <span>Importe</span>
                 </div>
-                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px;">
-                    <span><span id="t-qty"></span>x <span id="t-cat"></span></span>
-                    <span id="t-price"></span>
-                </div>
+                
+                <div id="t-items-container"></div>
+                
                 <div style="border-bottom: 1px dashed black; margin-bottom: 10px; margin-top: 10px;"></div>
                 <p style="margin: 0; font-size: 11px;">Notas: <span id="t-notes"></span></p>
                 <div style="text-align: right; margin-top: 15px;">
@@ -325,15 +348,16 @@
 
         let state = {
             currentUser: null, role: '',
-            category: '', qty: 1, currency: 'USD', price: '0', payment: 'Efectivo', notes: '',
+            
+            // NUEVO: Variables del carrito activo
+            cart: [], 
+            
+            // Variables temporales del paso a paso
+            category: '', qty: 1, currency: 'USD', price: '0', payment: 'Efectivo',
+            
             history: [],
             lastSale: null, chartType: 'bar', selectedCategoryIcon: '💍',
-            
-            // NUEVO: Array para filtros múltiples
-            activeFilters: {
-                categories: [], // Vacío = muestra todos
-                payments: []    // Vacío = muestra todos
-            }
+            activeFilters: { categories: [], payments: [] }
         };
         
         let chartInstance = null;
@@ -358,7 +382,14 @@
                     document.getElementById('btn-add-category').style.display = 'flex';
                 }
 
-                state.history = JSON.parse(localStorage.getItem('mdp_history') || '[]');
+                // Cargamos historial, pero si es un formato viejo sin 'cart', lo limpiamos para evitar errores
+                let rawHist = localStorage.getItem('mdp_history');
+                if(rawHist && !rawHist.includes('"cart":')) {
+                    localStorage.removeItem('mdp_history');
+                    state.history = [];
+                } else {
+                    state.history = JSON.parse(rawHist || '[]');
+                }
 
                 document.getElementById('view-login').classList.add('opacity-0', 'pointer-events-none');
                 setTimeout(() => {
@@ -402,7 +433,6 @@
             const name = document.getElementById('new-cat-input').value.trim();
             if(!name) return;
 
-            // 1. Añadir al Grid Principal
             const newBtn = document.createElement('button');
             newBtn.className = "aspect-square bg-slate-50 border border-slate-200 rounded-3xl hover:border-brand flex flex-col items-center justify-center gap-3 active:scale-95 transition-all shadow-sm animate-in zoom-in-75";
             newBtn.onclick = () => nextStep('qty', name);
@@ -414,7 +444,6 @@
             const addBtn = document.getElementById('btn-add-category');
             grid.insertBefore(newBtn, addBtn);
             
-            // 2. Añadir a los Filtros Múltiples de Reportes
             const filterContainer = document.getElementById('filter-cat-container');
             const filterBtn = document.createElement('button');
             filterBtn.className = "px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold text-slate-600 bg-white transition-all active:scale-95";
@@ -428,6 +457,7 @@
         function init() {}
 
         function resetSale() {
+            state.cart = []; // Vaciar carrito
             state.category = ''; state.qty = 1; state.currency = 'USD'; state.price = '0'; state.payment = 'Efectivo';
             document.getElementById('display-qty').innerText = '1';
             document.getElementById('display-price').innerText = '0';
@@ -438,13 +468,16 @@
         }
 
         function showView(viewId) {
-            ['view-categories', 'view-qty', 'view-price', 'view-payment', 'view-confirm', 'summary-view'].forEach(v => document.getElementById(v).classList.add('hidden'));
+            ['view-categories', 'view-qty', 'view-price', 'view-cart', 'view-payment', 'view-confirm', 'summary-view'].forEach(v => document.getElementById(v).classList.add('hidden'));
             document.getElementById(viewId).classList.remove('hidden');
             if(viewId === 'summary-view') { applyFilters(); }
         }
 
         function nextStep(view, data) {
-            if(data) state.category = data;
+            if(data) {
+                state.category = data;
+                document.getElementById('lbl-cat-qty').innerText = data.toUpperCase();
+            }
             showView('view-' + view);
         }
 
@@ -467,6 +500,70 @@
             document.getElementById('display-price').innerText = state.price;
         }
 
+        // --- LÓGICA DEL CARRITO (NUEVO) ---
+        function addToCart() {
+            const numPrice = parseFloat(state.price || 0);
+            if(numPrice <= 0) return alert("Por favor ingrese un precio válido.");
+
+            const total = numPrice * state.qty;
+            state.cart.push({
+                category: state.category,
+                qty: state.qty,
+                currency: state.currency,
+                price: numPrice,
+                total: total
+            });
+            
+            // Limpiar variables temporales para la siguiente joya
+            state.category = ''; state.qty = 1; state.price = '0';
+            document.getElementById('display-qty').innerText = '1';
+            document.getElementById('display-price').innerText = '0';
+            
+            renderCart();
+            showView('view-cart');
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items-container');
+            let tBs = 0, tUSD = 0;
+            
+            container.innerHTML = state.cart.map((item, index) => {
+                if(item.currency === 'BS') tBs += item.total;
+                else tUSD += item.total;
+                
+                let emo = '💎'; // Icono genérico
+                if(item.category.toUpperCase().includes('ANILLO')) emo = '💍';
+                if(item.category.toUpperCase().includes('CADENA')) emo = '📿';
+                if(item.category.toUpperCase().includes('RELOJ')) emo = '⌚';
+                if(item.category.toUpperCase().includes('ARETE')) emo = '👂';
+
+                return `<div class="flex justify-between items-center bg-slate-50 p-3 rounded-xl border border-slate-200 shadow-sm animate-in slide-in-from-right-2">
+                    <div class="flex items-center gap-3">
+                        <div class="text-2xl">${emo}</div>
+                        <div class="text-left">
+                            <p class="font-bold text-slate-700 text-sm leading-tight">${item.qty}x ${item.category}</p>
+                            <p class="text-[10px] text-slate-400 font-semibold">${item.currency === 'USD' ? '$' : 'Bs'} ${item.price.toFixed(2)} c/u</p>
+                        </div>
+                    </div>
+                    <div class="text-right flex items-center gap-4">
+                        <p class="font-black text-brand text-lg">${item.currency === 'USD' ? '$' : 'Bs'} ${item.total.toFixed(2)}</p>
+                        <button onclick="removeFromCart(${index})" class="w-8 h-8 rounded-full bg-rose-100 text-rose-500 active:scale-90 transition-transform"><i class="fa-solid fa-trash text-xs"></i></button>
+                    </div>
+                </div>`;
+            }).join('');
+            
+            let totalStrs = [];
+            if(tBs > 0) totalStrs.push(`Bs ${tBs.toFixed(2)}`);
+            if(tUSD > 0) totalStrs.push(`$ ${tUSD.toFixed(2)}`);
+            document.getElementById('cart-total-display').innerText = totalStrs.join(' + ') || 'Bs 0.00';
+        }
+
+        function removeFromCart(index) {
+            state.cart.splice(index, 1);
+            if(state.cart.length === 0) showView('view-categories');
+            else renderCart();
+        }
+
         function setPayment(method, btn) {
             state.payment = method;
             document.querySelectorAll('.pay-option').forEach(b => {
@@ -478,32 +575,53 @@
         }
 
         function finalizeSale() {
-            const total = parseFloat(state.price || 0) * state.qty;
+            if(state.cart.length === 0) return;
+
             const notesInput = document.getElementById('sale-notes');
             
+            // Guardamos todo el carrito en la transacción
             state.lastSale = {
                 id: 'MDP-' + Math.floor(Math.random()*10000),
                 user: state.currentUser,
-                category: state.category, qty: state.qty, currency: state.currency, total: total, payment: state.payment,
+                cart: [...state.cart], 
+                payment: state.payment,
                 notes: notesInput ? notesInput.value : '',
                 time: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
                 date: new Date().toLocaleDateString(),
                 isoDate: new Date().toISOString().split('T')[0]
             };
+            
             state.history.unshift(state.lastSale);
             localStorage.setItem('mdp_history', JSON.stringify(state.history));
             
+            // Llenado del PDF con el carrito completo
             document.getElementById('t-id').innerText = state.lastSale.id;
             document.getElementById('t-user').innerText = state.lastSale.user;
             document.getElementById('t-date').innerText = `${state.lastSale.date} ${state.lastSale.time}`;
-            document.getElementById('t-qty').innerText = state.lastSale.qty;
-            document.getElementById('t-cat').innerText = state.lastSale.category;
-            let sym = state.currency === 'USD' ? '$' : 'Bs';
-            document.getElementById('t-price').innerText = `${sym} ${(parseFloat(state.price)).toFixed(2)}`;
-            document.getElementById('t-total').innerText = `${sym} ${total.toFixed(2)}`;
             document.getElementById('t-pay').innerText = state.lastSale.payment;
             document.getElementById('t-notes').innerText = state.lastSale.notes || '--';
 
+            // Items en PDF
+            const pdfItemsContainer = document.getElementById('t-items-container');
+            pdfItemsContainer.innerHTML = state.lastSale.cart.map(item => `
+                <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px;">
+                    <span>${item.qty}x ${item.category}</span>
+                    <span>${item.currency === 'USD' ? '$' : 'Bs'} ${item.total.toFixed(2)}</span>
+                </div>
+            `).join('');
+
+            // Total en PDF
+            let tBs = 0, tUSD = 0;
+            state.lastSale.cart.forEach(i => {
+                if(i.currency === 'BS') tBs += i.total;
+                else tUSD += i.total;
+            });
+            let totalsStr = [];
+            if(tBs > 0) totalsStr.push(`Bs ${tBs.toFixed(2)}`);
+            if(tUSD > 0) totalsStr.push(`$ ${tUSD.toFixed(2)}`);
+            document.getElementById('t-total').innerText = totalsStr.join(' + ');
+
+            // Audio & Voz
             try {
                 const actx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = actx.createOscillator(); const gain = actx.createGain();
@@ -514,7 +632,7 @@
 
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel(); 
-                let m = new SpeechSynthesisUtterance(`Venta guardada. Total: ${total} ${state.currency === 'USD' ? 'dólares' : 'bolivianos'}.`);
+                let m = new SpeechSynthesisUtterance(`Venta guardada exitosamente.`);
                 m.lang = 'es-ES'; window.speechSynthesis.speak(m);
             }
 
@@ -522,9 +640,15 @@
             updateHeaders();
         }
 
+        // --- ACTUALIZACIÓN DE ESTADÍSTICAS PARA MÚLTIPLES ITEMS ---
         function updateHeaders() {
-            const tUSD = state.history.filter(s => s.currency === 'USD').reduce((a, s) => a + s.total, 0);
-            const tBS = state.history.filter(s => s.currency === 'BS').reduce((a, s) => a + s.total, 0);
+            let tUSD = 0, tBS = 0;
+            state.history.forEach(sale => {
+                sale.cart.forEach(item => {
+                    if(item.currency === 'USD') tUSD += item.total;
+                    if(item.currency === 'BS') tBS += item.total;
+                });
+            });
             document.getElementById('header-total-usd').innerText = `$ ${tUSD.toFixed(2)}`;
             document.getElementById('header-total-bs').innerText = `Bs ${tBS.toFixed(2)}`;
         }
@@ -541,82 +665,78 @@
             applyFilters();
         }
 
-        // --- SISTEMA DE FILTROS MÚLTIPLES (NUEVO) ---
         function toggleFilter(type, value, btn) {
             let arr = state.activeFilters[type];
             let index = arr.indexOf(value);
-            
             if (index > -1) {
-                // Si ya estaba seleccionado, lo quitamos (Desactivar)
                 arr.splice(index, 1);
                 btn.classList.remove('bg-brand', 'text-white', 'border-brand');
                 btn.classList.add('bg-white', 'text-slate-600', 'border-slate-200');
             } else {
-                // Si no estaba, lo añadimos (Activar)
                 arr.push(value);
                 btn.classList.remove('bg-white', 'text-slate-600', 'border-slate-200');
                 btn.classList.add('bg-brand', 'text-white', 'border-brand');
             }
-            
-            applyFilters(); // Recalcular todo en tiempo real
+            applyFilters(); 
         }
 
         function applyFilters() {
             const fStart = document.getElementById('filter-date-start').value;
             const fEnd = document.getElementById('filter-date-end').value;
             
-            let filtered = state.history.filter(s => {
-                // Si el array de categorías está vacío, asume que queremos ver TODAS.
-                // Si tiene elementos, verifica si la categoría de la venta está en el array.
-                let matchCat = state.activeFilters.categories.length === 0 || state.activeFilters.categories.includes(s.category);
-                
-                // Misma lógica para métodos de pago
+            // Filtramos las ventas
+            let filteredSales = state.history.filter(s => {
                 let matchPay = state.activeFilters.payments.length === 0 || state.activeFilters.payments.includes(s.payment);
                 
-                // Lógica de fechas (Un día exacto o Rango)
                 let matchDate = true;
-                if (fStart && !fEnd) {
-                     matchDate = s.isoDate === fStart; // Exacta si solo pone inicio
-                } else if (!fStart && fEnd) {
-                     matchDate = s.isoDate === fEnd; // Exacta si solo pone fin
-                } else if (fStart && fEnd) {
-                     matchDate = s.isoDate >= fStart && s.isoDate <= fEnd; // Rango
+                if (fStart && !fEnd) matchDate = s.isoDate === fStart;
+                else if (!fStart && fEnd) matchDate = s.isoDate === fEnd;
+                else if (fStart && fEnd) matchDate = s.isoDate >= fStart && s.isoDate <= fEnd;
+                
+                // Para las categorías, como una venta puede tener varias, comprobamos si AL MENOS UN item en el carrito cumple el filtro.
+                // Si cumple, la venta entra entera al log.
+                let matchCat = true;
+                if (state.activeFilters.categories.length > 0) {
+                    matchCat = s.cart.some(item => state.activeFilters.categories.includes(item.category));
                 }
                 
-                return matchCat && matchPay && matchDate;
+                return matchPay && matchDate && matchCat;
             });
             
-            renderLog(filtered);
-            updateChart(filtered);
+            renderLog(filteredSales);
+            updateChart(filteredSales);
         }
 
         function renderLog(data) {
             const container = document.getElementById('sales-log');
             container.innerHTML = data.map(s => {
-                let sym = s.currency === 'USD' ? '$' : 'Bs';
-                let emo = s.category.includes('Anillo') ? '💍' : s.category.includes('Cadena') ? '📿' : s.category.includes('Reloj') ? '⌚' : '👂';
                 
-                if(['💍', '📿', '⌚', '👂'].every(e => !s.category.includes(e))) {
-                     emo = '💎'; 
-                     document.querySelectorAll('#category-grid button').forEach(btn => {
-                         if(btn.querySelector('span:last-child') && btn.querySelector('span:last-child').innerText.toUpperCase() === s.category.toUpperCase()){
-                             emo = btn.querySelector('span:first-child').innerText;
-                         }
-                     });
-                }
+                // Resumir el carrito para mostrar en el log
+                let desc = s.cart.map(i => `${i.qty}x ${i.category}`).join(' + ');
                 
+                let totalVentaBs = 0, totalVentaUsd = 0;
+                s.cart.forEach(i => {
+                    if(i.currency === 'BS') totalVentaBs += i.total;
+                    else totalVentaUsd += i.total;
+                });
+                
+                let totArr = [];
+                if(totalVentaBs > 0) totArr.push(`Bs ${totalVentaBs.toFixed(2)}`);
+                if(totalVentaUsd > 0) totArr.push(`$ ${totalVentaUsd.toFixed(2)}`);
+                let totalFinalStr = totArr.join(' | ');
+
                 let notasHTML = s.notes ? `<p class="text-[9px] text-slate-500 italic mt-1">"${s.notes}"</p>` : '';
                 return `<div class="bg-white p-3 rounded-xl shadow-sm flex justify-between items-center text-sm border border-slate-100 animate-in fade-in duration-300">
                     <div class="flex gap-2 items-center">
-                        <div class="text-2xl">${emo}</div>
+                        <div class="text-2xl text-slate-300"><i class="fa-solid fa-receipt"></i></div>
                         <div>
-                            <p class="font-bold text-slate-700">${s.category} (x${s.qty})</p>
+                            <p class="font-bold text-slate-700 text-xs">${desc}</p>
                             <p class="text-[9px] text-slate-400 uppercase">${s.payment} • ${s.user.split(' ')[0]} • ${s.date} ${s.time}</p>
                             ${notasHTML}
                         </div>
                     </div>
                     <div class="text-right">
-                        <p class="font-black text-brand">${sym} ${s.total.toFixed(2)}</p>
+                        <p class="font-black text-brand text-xs">${totalFinalStr}</p>
                         <p class="text-[9px] text-slate-300">ID: ${s.id}</p>
                     </div>
                 </div>`;
@@ -630,14 +750,21 @@
             
             if(data.length === 0) {
                 if(chartInstance) chartInstance.destroy();
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.font = "12px sans-serif"; ctx.fillStyle = "#a1a1aa"; ctx.textAlign = "center";
                 ctx.fillText("Sin datos", canvas.width/2, canvas.height/2);
                 return;
             }
 
             let counts = {};
-            data.forEach(s => {
-                counts[s.category] = (counts[s.category] || 0) + s.total; 
+            // Ahora iteramos por cada ítem dentro del carrito de cada venta
+            data.forEach(sale => {
+                sale.cart.forEach(item => {
+                    // Si hay un filtro de categoría activo, solo sumamos lo que corresponde al filtro
+                    if(state.activeFilters.categories.length === 0 || state.activeFilters.categories.includes(item.category)){
+                        counts[item.category] = (counts[item.category] || 0) + item.total;
+                    }
+                });
             });
 
             if(chartInstance) chartInstance.destroy();
@@ -647,6 +774,7 @@
                 data: {
                     labels: Object.keys(counts),
                     datasets: [{
+                        label: 'Monto Generado', // SOLUCIÓN AL "UNDEFINED"
                         data: Object.values(counts),
                         backgroundColor: ['#007672', '#009692', '#33a5a2', '#66c0be', '#d6a34a', '#f59e0b', '#ec4899'],
                         borderWidth: 2
@@ -675,28 +803,36 @@
         }
 
         function exportExcel() {
-            // Aplicar los mismos filtros visuales a la exportación
             const fStart = document.getElementById('filter-date-start').value;
             const fEnd = document.getElementById('filter-date-end').value;
             
-            let dataToExport = state.history.filter(s => {
-                let matchCat = state.activeFilters.categories.length === 0 || state.activeFilters.categories.includes(s.category);
+            let dataToExport = [];
+            
+            // Aplanamos el historial para que cada ítem del carrito sea una fila en Excel
+            state.history.forEach(s => {
                 let matchPay = state.activeFilters.payments.length === 0 || state.activeFilters.payments.includes(s.payment);
                 let matchDate = true;
                 if (fStart && !fEnd) matchDate = s.isoDate === fStart;
                 else if (!fStart && fEnd) matchDate = s.isoDate === fEnd;
                 else if (fStart && fEnd) matchDate = s.isoDate >= fStart && s.isoDate <= fEnd;
-                return matchCat && matchPay && matchDate;
+                
+                if(matchPay && matchDate) {
+                    s.cart.forEach(item => {
+                        let matchCat = state.activeFilters.categories.length === 0 || state.activeFilters.categories.includes(item.category);
+                        if(matchCat) {
+                            dataToExport.push({
+                                "ID Transacción": s.id, "Vendedor": s.user, "Fecha": s.date, "Hora": s.time,
+                                "Categoría": item.category, "Unidades": item.qty, "Moneda": item.currency, "Total Ítem": item.total,
+                                "Método de Pago Global": s.payment, "Observaciones": s.notes
+                            });
+                        }
+                    });
+                }
             });
 
             if(dataToExport.length === 0) return alert("No hay datos en el filtro actual para exportar");
             
-            const excelData = dataToExport.map(s => ({
-                "ID Transacción": s.id, "Vendedor": s.user, "Fecha": s.date, "Hora": s.time,
-                "Categoría": s.category, "Unidades": s.qty, "Moneda": s.currency, "Total Pagado": s.total,
-                "Método de Pago": s.payment, "Observaciones": s.notes
-            }));
-            const ws = XLSX.utils.json_to_sheet(excelData);
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Reporte_Filtrado");
             XLSX.writeFile(wb, "MarDePlata_Reporte.xlsx");
