@@ -348,13 +348,8 @@
 
         let state = {
             currentUser: null, role: '',
-            
-            // NUEVO: Variables del carrito activo
             cart: [], 
-            
-            // Variables temporales del paso a paso
             category: '', qty: 1, currency: 'USD', price: '0', payment: 'Efectivo',
-            
             history: [],
             lastSale: null, chartType: 'bar', selectedCategoryIcon: '💍',
             activeFilters: { categories: [], payments: [] }
@@ -382,7 +377,6 @@
                     document.getElementById('btn-add-category').style.display = 'flex';
                 }
 
-                // Cargamos historial, pero si es un formato viejo sin 'cart', lo limpiamos para evitar errores
                 let rawHist = localStorage.getItem('mdp_history');
                 if(rawHist && !rawHist.includes('"cart":')) {
                     localStorage.removeItem('mdp_history');
@@ -457,7 +451,7 @@
         function init() {}
 
         function resetSale() {
-            state.cart = []; // Vaciar carrito
+            state.cart = [];
             state.category = ''; state.qty = 1; state.currency = 'USD'; state.price = '0'; state.payment = 'Efectivo';
             document.getElementById('display-qty').innerText = '1';
             document.getElementById('display-price').innerText = '0';
@@ -500,21 +494,13 @@
             document.getElementById('display-price').innerText = state.price;
         }
 
-        // --- LÓGICA DEL CARRITO (NUEVO) ---
         function addToCart() {
             const numPrice = parseFloat(state.price || 0);
             if(numPrice <= 0) return alert("Por favor ingrese un precio válido.");
 
             const total = numPrice * state.qty;
-            state.cart.push({
-                category: state.category,
-                qty: state.qty,
-                currency: state.currency,
-                price: numPrice,
-                total: total
-            });
+            state.cart.push({ category: state.category, qty: state.qty, currency: state.currency, price: numPrice, total: total });
             
-            // Limpiar variables temporales para la siguiente joya
             state.category = ''; state.qty = 1; state.price = '0';
             document.getElementById('display-qty').innerText = '1';
             document.getElementById('display-price').innerText = '0';
@@ -531,7 +517,7 @@
                 if(item.currency === 'BS') tBs += item.total;
                 else tUSD += item.total;
                 
-                let emo = '💎'; // Icono genérico
+                let emo = '💎';
                 if(item.category.toUpperCase().includes('ANILLO')) emo = '💍';
                 if(item.category.toUpperCase().includes('CADENA')) emo = '📿';
                 if(item.category.toUpperCase().includes('RELOJ')) emo = '⌚';
@@ -579,7 +565,6 @@
 
             const notesInput = document.getElementById('sale-notes');
             
-            // Guardamos todo el carrito en la transacción
             state.lastSale = {
                 id: 'MDP-' + Math.floor(Math.random()*10000),
                 user: state.currentUser,
@@ -594,14 +579,12 @@
             state.history.unshift(state.lastSale);
             localStorage.setItem('mdp_history', JSON.stringify(state.history));
             
-            // Llenado del PDF con el carrito completo
             document.getElementById('t-id').innerText = state.lastSale.id;
             document.getElementById('t-user').innerText = state.lastSale.user;
             document.getElementById('t-date').innerText = `${state.lastSale.date} ${state.lastSale.time}`;
             document.getElementById('t-pay').innerText = state.lastSale.payment;
             document.getElementById('t-notes').innerText = state.lastSale.notes || '--';
 
-            // Items en PDF
             const pdfItemsContainer = document.getElementById('t-items-container');
             pdfItemsContainer.innerHTML = state.lastSale.cart.map(item => `
                 <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 5px;">
@@ -610,7 +593,6 @@
                 </div>
             `).join('');
 
-            // Total en PDF
             let tBs = 0, tUSD = 0;
             state.lastSale.cart.forEach(i => {
                 if(i.currency === 'BS') tBs += i.total;
@@ -621,7 +603,6 @@
             if(tUSD > 0) totalsStr.push(`$ ${tUSD.toFixed(2)}`);
             document.getElementById('t-total').innerText = totalsStr.join(' + ');
 
-            // Audio & Voz
             try {
                 const actx = new (window.AudioContext || window.webkitAudioContext)();
                 const osc = actx.createOscillator(); const gain = actx.createGain();
@@ -640,7 +621,6 @@
             updateHeaders();
         }
 
-        // --- ACTUALIZACIÓN DE ESTADÍSTICAS PARA MÚLTIPLES ITEMS ---
         function updateHeaders() {
             let tUSD = 0, tBS = 0;
             state.history.forEach(sale => {
@@ -684,7 +664,6 @@
             const fStart = document.getElementById('filter-date-start').value;
             const fEnd = document.getElementById('filter-date-end').value;
             
-            // Filtramos las ventas
             let filteredSales = state.history.filter(s => {
                 let matchPay = state.activeFilters.payments.length === 0 || state.activeFilters.payments.includes(s.payment);
                 
@@ -693,8 +672,6 @@
                 else if (!fStart && fEnd) matchDate = s.isoDate === fEnd;
                 else if (fStart && fEnd) matchDate = s.isoDate >= fStart && s.isoDate <= fEnd;
                 
-                // Para las categorías, como una venta puede tener varias, comprobamos si AL MENOS UN item en el carrito cumple el filtro.
-                // Si cumple, la venta entra entera al log.
                 let matchCat = true;
                 if (state.activeFilters.categories.length > 0) {
                     matchCat = s.cart.some(item => state.activeFilters.categories.includes(item.category));
@@ -710,8 +687,6 @@
         function renderLog(data) {
             const container = document.getElementById('sales-log');
             container.innerHTML = data.map(s => {
-                
-                // Resumir el carrito para mostrar en el log
                 let desc = s.cart.map(i => `${i.qty}x ${i.category}`).join(' + ');
                 
                 let totalVentaBs = 0, totalVentaUsd = 0;
@@ -757,10 +732,8 @@
             }
 
             let counts = {};
-            // Ahora iteramos por cada ítem dentro del carrito de cada venta
             data.forEach(sale => {
                 sale.cart.forEach(item => {
-                    // Si hay un filtro de categoría activo, solo sumamos lo que corresponde al filtro
                     if(state.activeFilters.categories.length === 0 || state.activeFilters.categories.includes(item.category)){
                         counts[item.category] = (counts[item.category] || 0) + item.total;
                     }
@@ -769,14 +742,24 @@
 
             if(chartInstance) chartInstance.destroy();
 
+            // AQUÍ ESTÁN LOS COLORES NUEVOS Y VARIADOS
             chartInstance = new Chart(ctx, {
                 type: state.chartType, 
                 data: {
                     labels: Object.keys(counts),
                     datasets: [{
-                        label: 'Monto Generado', // SOLUCIÓN AL "UNDEFINED"
+                        label: 'Monto Generado',
                         data: Object.values(counts),
-                        backgroundColor: ['#007672', '#009692', '#33a5a2', '#66c0be', '#d6a34a', '#f59e0b', '#ec4899'],
+                        backgroundColor: [
+                            '#007672', // Teal principal (Marca)
+                            '#d6a34a', // Dorado (Marca)
+                            '#ec4899', // Rosa
+                            '#3b82f6', // Azul
+                            '#8b5cf6', // Morado
+                            '#f43f5e', // Rojo/Rose
+                            '#10b981', // Esmeralda
+                            '#f97316'  // Naranja
+                        ],
                         borderWidth: 2
                     }]
                 },
@@ -808,7 +791,6 @@
             
             let dataToExport = [];
             
-            // Aplanamos el historial para que cada ítem del carrito sea una fila en Excel
             state.history.forEach(s => {
                 let matchPay = state.activeFilters.payments.length === 0 || state.activeFilters.payments.includes(s.payment);
                 let matchDate = true;
